@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PCP SERVICE — Formulários</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #050d18;
+    --surface: #0a1628;
+    --surface2: #0f1e38;
+    --border: #1a3a5c;
+    --cyan: #00d4ff;
+    --cyan2: #0088cc;
+    --white: #e8f4ff;
+    --muted: #4a7a9b;
+    --success: #00e676;
+    --error: #ff5252;
+    --orange: #ff6d00;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Sora', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(0,136,204,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,212,255,0.05) 0%, transparent 60%);
+  }
+
+  header {
+    background: linear-gradient(135deg, #0a1628 0%, #071020 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #0066aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+  }
+
+  .logo span {
+    font-size: 11px;
+    font-weight: 400;
+    display: block;
+    background: linear-gradient(90deg, #00d4ff, #0088cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+
+  .header-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    padding: 32px 40px 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .tab-btn {
+    padding: 12px 28px;
+    border-radius: 10px 10px 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover { color: var(--cyan); border-color: var(--cyan2); }
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--cyan);
+    border-color: var(--cyan);
+    border-bottom: 1px solid var(--surface);
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 40px 60px;
+  }
+
+  .form-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 12px 12px 12px;
+    padding: 40px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .form-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,136,204,0.1));
+    border: 1px solid rgba(0,212,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  .section-header h2 { font-size: 20px; font-weight: 700; color: var(--white); }
+  .section-header p  { font-size: 12px; color: var(--muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .full   { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; gap: 7px; }
+
+  .field label {
+    font-size: 11px; font-weight: 600; color: var(--cyan);
+    text-transform: uppercase; letter-spacing: 1px;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .field label .req { color: var(--orange); font-size: 14px; line-height: 1; }
+
+  .field input,
+  .field select,
+  .field textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--white);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    transition: all 0.2s;
+    outline: none;
+    width: 100%;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
+    background: #0d2040;
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--muted); font-size: 13px; }
+
+  .field select {
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300d4ff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+  }
+
+  .field select option { background: #0a1628; color: var(--white); }
+  .field textarea { resize: vertical; min-height: 90px; }
+
+  .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .radio-option { flex: 1; min-width: 80px; }
+  .radio-option input[type="radio"] { display: none; }
+  .radio-option label {
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    transition: all 0.2s;
+    text-transform: none; letter-spacing: 0;
+    font-family: 'Sora', sans-serif;
+  }
+  .radio-option input:checked + label {
+    background: rgba(0,212,255,0.12);
+    border-color: var(--cyan); color: var(--cyan);
+  }
+
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .status-opt input[type="radio"] { display: none; }
+  .status-opt label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    border: 1px solid var(--border); font-size: 11px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all 0.18s;
+    font-family: 'JetBrains Mono', monospace; color: var(--muted);
+    background: var(--surface2);
+  }
+  .status-opt input:checked + label { background: rgba(0,212,255,0.14); border-color: var(--cyan); color: var(--cyan); }
+  .status-opt.andamento input:checked + label { background: rgba(0,200,100,0.12); border-color: #00c864; color: #00c864; }
+  .status-opt.concluido input:checked + label { background: rgba(0,230,118,0.12); border-color: #00e676; color: #00e676; }
+  .status-opt.cancelado input:checked + label { background: rgba(255,82,82,0.12); border-color: #ff5252; color: #ff5252; }
+  .status-opt.onhold    input:checked + label { background: rgba(255,193,7,0.12); border-color: #ffc107; color: #ffc107; }
+  .status-opt.impedi    input:checked + label { background: rgba(255,109,0,0.12); border-color: #ff6d00; color: #ff6d00; }
+  .status-opt.nreport   input:checked + label { background: rgba(120,120,140,0.12); border-color: #78788c; color: #78788c; }
+  .status-opt.prevenda  input:checked + label { background: rgba(156,39,176,0.12); border-color: #9c27b0; color: #ce93d8; }
+
+  .divider {
+    margin: 32px 0 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .divider span {
+    font-size: 11px; font-weight: 700; color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 2px; white-space: nowrap;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  .pass-wrap { position: relative; }
+  .pass-wrap input { padding-right: 44px; }
+  .pass-toggle {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px; padding: 4px; transition: color 0.2s;
+  }
+  .pass-toggle:hover { color: var(--cyan); }
+
+  .form-footer {
+    margin-top: 36px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+
+  .btn-submit {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #0088cc, #00d4ff);
+    border: none; border-radius: 10px;
+    color: #fff; font-family: 'Sora', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,136,204,0.35);
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,136,204,0.5); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .btn-clear {
+    padding: 14px 24px; background: transparent;
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--muted); font-family: 'Sora', sans-serif;
+    font-size: 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-clear:hover { border-color: var(--cyan2); color: var(--white); }
+
+  .btn-copy {
+    padding: 14px 24px; background: transparent;
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--muted); font-family: 'Sora', sans-serif;
+    font-size: 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-copy:hover { border-color: #00e676; color: #00e676; }
+
+  .required-note { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* RESULTADO COPIADO */
+  .result-box {
+    display: none;
+    margin-top: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .result-box.show { display: block; animation: fadeIn 0.3s ease; }
+  .result-box h4 {
+    font-size: 12px; font-weight: 700; color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .result-row {
+    display: grid; grid-template-columns: 180px 1fr;
+    gap: 8px; padding: 8px 0;
+    border-bottom: 1px solid rgba(26,58,92,0.5);
+    font-size: 13px;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-key  { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .result-val  { color: var(--white); font-weight: 500; }
+
+  .info-bar {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px; padding: 14px 18px;
+    margin-bottom: 28px; font-size: 13px;
+    color: var(--cyan); font-family: 'JetBrains Mono', monospace;
+    line-height: 1.6;
+  }
+  .info-bar span { color: var(--muted); font-family: 'Sora', sans-serif; }
+
+  .toast {
+    display: none; position: fixed;
+    bottom: 30px; right: 30px;
+    background: linear-gradient(135deg, #0a2a18, #0d3020);
+    border: 1px solid #00e676; border-radius: 12px;
+    padding: 16px 24px; color: #00e676;
+    font-size: 14px; font-weight: 600; z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 16px 20px; }
+    .tabs  { padding: 24px 20px 0; }
+    .container { padding: 0 20px 40px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .form-panel { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    PCP SERVICE
+    <span>AUTOMAÇÃO · SEGURANÇA · TECNOLOGIA</span>
+  </div>
+  <div class="header-badge">Sistema de Cadastro v3.0</div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('cliente')">👤 Cadastro de Cliente</button>
+  <button class="tab-btn" onclick="switchTab('rpa')">🤖 Cadastro de RPA</button>
+</div>
+
+<div class="container">
+
+  <!-- ============================= -->
+  <!-- FORM CLIENTE                  -->
+  <!-- ============================= -->
+  <div id="tab-cliente" class="form-panel active">
+    <div class="section-header">
+      <div class="section-icon">👤</div>
+      <div>
+        <h2>Cadastro de Cliente</h2>
+        <p>Aba: Cliente · Planilha: 00-ADM.xlsx</p>
+      </div>
+    </div>
+
+    <div class="info-bar">
+      💡 <span>Preencha os campos e clique em <strong>Salvar no OneDrive</strong>. O Forms abrirá numa nova aba — clique em <strong>Enviar</strong> lá para salvar na planilha automaticamente.</span>
+    </div>
+
+    <form id="form-cliente">
+
+      <div class="divider"><span>Identificação</span></div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Nome do Cliente <span class="req">*</span></label>
+          <select name="Cliente" required>
+            <option value="" disabled selected>Selecione o cliente...</option>
+            <option>Agrex</option><option>Alpargatas</option>
+            <option>Atacadão dia a dia</option><option>Cacau Show</option>
+            <option>CJ</option><option>Cofco</option><option>Coop. LAR</option>
+            <option>EBD</option><option>EMK</option><option>Lindt</option>
+            <option>Marfrig</option><option>Navarini</option><option>Ourosafra</option>
+            <option>Partage</option><option>Pirelli</option><option>Produza</option>
+            <option>Scala Datacenters</option><option>Skala cosmeticos</option>
+            <option>SLC Máquinas</option><option>SYN</option><option>Titan</option>
+            <option>UISA</option><option>Unimed</option><option>Usina Coruripe</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ponto Focal Cliente</label>
+          <input type="text" name="Ponto_Focal_Cliente" placeholder="Nome do responsável"/>
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" name="Email" placeholder="contato@empresa.com"/>
+        </div>
+        <div class="field">
+          <label>Telefone</label>
+          <input type="text" name="Telefone" placeholder="(11) 99999-9999"/>
+        </div>
+      </div>
+
+      <div class="divider"><span>Segurança</span></div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Tem MFA (Authenticator)? <span class="req">*</span></label>
+          <div class="radio-group">
+            <div class="radio-option"><input type="radio" name="MFA" id="mfa-s" value="Sim" required/><label for="mfa-s">✅ Sim</label></div>
+            <div class="radio-option"><input type="radio" name="MFA" id="mfa-n" value="Não"/><label for="mfa-n">❌ Não</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>SAS EMK? <span class="req">*</span></label>
+          <div class="radio-group">
+            <div class="radio-option"><input type="radio" name="SAS_EMK" id="sas-s" value="Sim" required/><label for="sas-s">✅ Sim</label></div>
+            <div class="radio-option"><input type="radio" name="SAS_EMK" id="sas-n" value="Não"/><label for="sas-n">❌ Não</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"><span>Acesso</span></div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Tipo de Acesso <span class="req">*</span></label>
+          <select name="Tipo_Acesso" required>
+            <option value="" disabled selected>Selecione...</option>
+            <option>AnyDesk</option><option>TeamViewer</option>
+            <option>VPN Corporativa</option><option>VPN - SBA Edge</option>
+            <option>RDP</option><option>SSH</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>URL / IP / Host</label>
+          <input type="text" name="URL_IP_Host" placeholder="192.168.1.1"/>
+        </div>
+        <div class="field">
+          <label>Usuário (ID)</label>
+          <input type="text" name="Usuario_ID" placeholder="nome.usuario"/>
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <div class="pass-wrap">
+            <input type="password" name="Senha" id="sc1" placeholder="••••••••"/>
+            <button type="button" class="pass-toggle" onclick="togglePass('sc1',this)">👁</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Porta</label>
+          <input type="text" name="Porta" placeholder="3389"/>
+        </div>
+      </div>
+
+      <div class="divider"><span>Observações</span></div>
+      <div class="field">
+        <label>Observações de Acesso</label>
+        <textarea name="Observacoes_Acesso" placeholder="Informações adicionais..."></textarea>
+      </div>
+
+      <div class="form-footer">
+        <span class="required-note">* Campos obrigatórios</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button type="button" class="btn-clear" onclick="clearForm('form-cliente','res-cliente')">🗑 Limpar</button>
+          <button type="button" class="btn-copy" onclick="copyData('form-cliente','res-cliente')">📋 Copiar dados</button>
+          <button type="submit" class="btn-submit">💾 Salvar no OneDrive</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Resultado -->
+    <div id="res-cliente" class="result-box">
+      <h4>📋 Dados prontos para colar na planilha</h4>
+      <div id="res-cliente-rows"></div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- FORM RPA                      -->
+  <!-- ============================= -->
+  <div id="tab-rpa" class="form-panel">
+    <div class="section-header">
+      <div class="section-icon">🤖</div>
+      <div>
+        <h2>Cadastro de RPA / Projeto</h2>
+        <p>Aba: RPAs_Detalhes · Planilha: 00-ADM.xlsx</p>
+      </div>
+    </div>
+
+    <div class="info-bar">
+      💡 <span>Preencha os campos e clique em <strong>Salvar no OneDrive</strong>. O Forms abrirá numa nova aba — clique em <strong>Enviar</strong> lá para salvar na planilha automaticamente.</span>
+    </div>
+
+    <form id="form-rpa">
+
+      <div class="divider"><span>Identificação do Projeto</span></div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Nome do Cliente <span class="req">*</span></label>
+          <select name="Nome_Cliente" required>
+            <option value="" disabled selected>Selecione...</option>
+            <option>Agrex</option><option>Alpargatas</option>
+            <option>Atacadão dia a dia</option><option>Cacau Show</option>
+            <option>CJ</option><option>Cofco</option><option>Coop. LAR</option>
+            <option>EBD</option><option>EMK</option><option>Lindt</option>
+            <option>Marfrig</option><option>Navarini</option><option>Ourosafra</option>
+            <option>Partage</option><option>Pirelli</option><option>Produza</option>
+            <option>Scala Datacenters</option><option>Skala cosmeticos</option>
+            <option>SLC Máquinas</option><option>SYN</option><option>Titan</option>
+            <option>UISA</option><option>Unimed</option><option>Usina Coruripe</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>RPA / Projeto <span class="req">*</span></label>
+          <input type="text" name="RPA_Projeto" placeholder="Ex: PI001 - Automação de Ponto" required/>
+        </div>
+        <div class="field">
+          <label>Tecnologia</label>
+          <input type="text" name="Tecnologia" placeholder="UiPath, Power Automate..."/>
+        </div>
+        <div class="field">
+          <label>Produto</label>
+          <input type="text" name="Produto" placeholder="EMK Monitor..."/>
+        </div>
+        <div class="field">
+          <label>Complexidade</label>
+          <select name="Complexidade">
+            <option value="" disabled selected>Selecione...</option>
+            <option>Baixa</option><option>Média</option><option>Alta</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Desenvolvedor <span class="req">*</span></label>
+          <select name="Desenvolvedor" required>
+            <option value="" disabled selected>Selecione...</option>
+            <option>Amanda Felix</option><option>Anderson Bandeira</option>
+            <option>Antonio Ortiz</option><option>Arnaldo Colinski</option>
+            <option>Daniel Bonilia</option><option>Eduardo Alves de Oliveira</option>
+            <option>Endrel Lucas</option><option>Fabio Carreira</option>
+            <option>Henrique Reis Furigo</option><option>Jean Vieira</option>
+            <option>Jonas Emerson</option><option>Leonardo de Paula</option>
+            <option>Matheus Andrade</option><option>Rogério BI</option>
+            <option>Victor Melo</option><option>Vitor Gibim</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ponto Focal Interno</label>
+          <input type="text" name="Ponto_Focal_Interno" placeholder="Nome do responsável"/>
+        </div>
+        <div class="field">
+          <label>Monitoramento</label>
+          <input type="text" name="Monitoramento" placeholder="EMK Monitor, Manual..."/>
+        </div>
+      </div>
+
+      <div class="divider"><span>Status</span></div>
+      <div class="field">
+        <label>Status <span class="req">*</span></label>
+        <div class="status-grid">
+          <div class="status-opt andamento"><input type="radio" name="Status" id="s1" value="Em Andamento" required/><label for="s1">🟢 Em Andamento</label></div>
+          <div class="status-opt concluido"><input type="radio" name="Status" id="s2" value="Concluído"/><label for="s2">✅ Concluído</label></div>
+          <div class="status-opt cancelado"><input type="radio" name="Status" id="s3" value="Cancelado"/><label for="s3">❌ Cancelado</label></div>
+          <div class="status-opt onhold">  <input type="radio" name="Status" id="s4" value="On Hold"/><label for="s4">⏸ On Hold</label></div>
+          <div class="status-opt impedi">  <input type="radio" name="Status" id="s5" value="Impedimento"/><label for="s5">🚧 Impedimento</label></div>
+          <div class="status-opt nreport"> <input type="radio" name="Status" id="s6" value="Não Reportar"/><label for="s6">🔇 Não Reportar</label></div>
+          <div class="status-opt prevenda"><input type="radio" name="Status" id="s7" value="Pré Venda"/><label for="s7">💜 Pré Venda</label></div>
+        </div>
+      </div>
+
+      <div class="divider"><span>Datas</span></div>
+      <div class="grid-2">
+        <div class="field"><label>Data de Início</label><input type="date" name="Data_Inicio"/></div>
+        <div class="field"><label>Data de Término</label><input type="date" name="Data_Termino"/></div>
+      </div>
+
+      <div class="divider"><span>Acesso ao Robô</span></div>
+      <div class="grid-2">
+        <div class="field"><label>Tipo de Acesso</label><input type="text" name="Tipo_Acesso_Robo" placeholder="VPN, RDP..."/></div>
+        <div class="field"><label>Servidor / URL</label><input type="text" name="Servidor_URL" placeholder="srv-rpa01"/></div>
+        <div class="field"><label>Usuário (ID)</label><input type="text" name="Usuario_ID" placeholder="nome.usuario"/></div>
+        <div class="field">
+          <label>Senha</label>
+          <div class="pass-wrap">
+            <input type="password" name="Senha" id="sr1" placeholder="••••••••"/>
+            <button type="button" class="pass-toggle" onclick="togglePass('sr1',this)">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"><span>Observações</span></div>
+      <div class="field">
+        <label>Observações</label>
+        <textarea name="Observacoes" placeholder="Notas adicionais..."></textarea>
+      </div>
+
+      <div class="form-footer">
+        <span class="required-note">* Campos obrigatórios</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button type="button" class="btn-clear" onclick="clearForm('form-rpa','res-rpa')">🗑 Limpar</button>
+          <button type="button" class="btn-copy" onclick="copyData('form-rpa','res-rpa')">📋 Copiar dados</button>
+          <button type="submit" class="btn-submit">💾 Salvar no OneDrive</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="res-rpa" class="result-box">
+      <h4>📋 Dados prontos para colar na planilha</h4>
+      <div id="res-rpa-rows"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  // Mapeamento de nomes amigáveis
+  const LABELS = {
+    Cliente:'Cliente', MFA:'Tem MFA', SAS_EMK:'SAS EMK',
+    Ponto_Focal_Cliente:'Ponto Focal', Email:'E-mail', Telefone:'Telefone',
+    Tipo_Acesso:'Tipo de Acesso', URL_IP_Host:'URL / IP / Host',
+    Usuario_ID:'Usuário (ID)', Senha:'Senha', Porta:'Porta',
+    Observacoes_Acesso:'Observações',
+    Nome_Cliente:'Cliente', Tecnologia:'Tecnologia', RPA_Projeto:'RPA/Projeto',
+    Complexidade:'Complexidade', Produto:'Produto', Desenvolvedor:'Desenvolvedor',
+    Ponto_Focal_Interno:'Ponto Focal Int.', Monitoramento:'Monitoramento',
+    Status:'Status', Data_Inicio:'Início', Data_Termino:'Término',
+    Tipo_Acesso_Robo:'Tipo Acesso Robô', Servidor_URL:'Servidor/URL',
+    Observacoes:'Observações'
+  };
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => {
+      b.classList.toggle('active', ['cliente','rpa'][i] === tab);
+    });
+    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function togglePass(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.textContent = el.type === 'password' ? '👁' : '🙈';
+  }
+
+  function clearForm(formId, resId) {
+    if (confirm('Limpar todos os campos?')) {
+      document.getElementById(formId).reset();
+      const res = document.getElementById(resId);
+      res.classList.remove('show');
+    }
+  }
+
+  function getFormData(formId) {
+    const form = document.getElementById(formId);
+    const data = new FormData(form);
+    return Object.fromEntries(data.entries());
+  }
+
+  function copyData(formId, resId) {
+    const form = document.getElementById(formId);
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+    const obj  = getFormData(formId);
+    const rows = document.getElementById(resId + '-rows');
+    const res  = document.getElementById(resId);
+
+    // Monta HTML de visualização
+    rows.innerHTML = Object.entries(obj).map(([k,v]) =>
+      `<div class="result-row">
+        <span class="result-key">${LABELS[k] || k}</span>
+        <span class="result-val">${v || '—'}</span>
+      </div>`
+    ).join('');
+
+    res.classList.add('show');
+
+    // Copia como texto tab-separado (formato para colar no Excel)
+    const tsv = Object.values(obj).join('\t');
+    navigator.clipboard.writeText(tsv).then(() => {
+      showToast('📋 Dados copiados! Cole diretamente na planilha (Ctrl+V)');
+    }).catch(() => {
+      showToast('✅ Dados exibidos abaixo — copie manualmente');
+    });
+  }
+
+  // IDs das perguntas do Microsoft Forms Cadastro Cliente EMK
+  // Formato: cada pergunta tem um ID único no Forms
+  const FIELDS_CLIENTE = {
+    Cliente:            { label: 'cliente',                  idx: 0 },
+    MFA:                { label: 'Tem MFA (Authenticator)?', idx: 1 },
+    SAS_EMK:            { label: 'SAS EMK?',                 idx: 2 },
+    Ponto_Focal_Cliente:{ label: 'Ponto Focal',              idx: 3 },
+    Email:              { label: 'E-mail',                   idx: 4 },
+    Telefone:           { label: 'Telefone',                 idx: 5 },
+    Tipo_Acesso:        { label: 'Tipo de Acesso',           idx: 6 },
+    URL_IP_Host:        { label: 'URL / IP / Host',          idx: 7 },
+    Usuario_ID:         { label: 'Usuário (ID)',             idx: 8 },
+    Senha:              { label: 'Senha',                    idx: 9 },
+    Porta:              { label: 'Porta',                    idx: 10 },
+    Observacoes_Acesso: { label: 'Observações',              idx: 11 }
+  };
+
+  const FORMS_CLIENTE = 'https://forms.microsoft.com/Pages/ResponsePage.aspx?id=KVMBOEnu8UWVTIR7ksFCXcyGJIPaLQBDluT0i7wZ7jNUQ1pUQUlHVU5LU0RDM0hQWjlRSDNIT0RZUS4u';
+  const FORMS_RPA     = 'https://forms.microsoft.com/Pages/ResponsePage.aspx?id=KVMBOEnu8UWVTIR7ksFCXcyGJIPaLQBDluT0i7wZ7jNUQVk4N0hQMzM5TFA4UlNIUVU1RzAzSDFQRi4u';
+
+  document.getElementById('form-cliente').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!this.checkValidity()) { this.reportValidity(); return; }
+    abrirFormsPreenchido('form-cliente', 'res-cliente', FORMS_CLIENTE, 'Cliente');
+  });
+
+  document.getElementById('form-rpa').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!this.checkValidity()) { this.reportValidity(); return; }
+    abrirFormsPreenchido('form-rpa', 'res-rpa', FORMS_RPA, 'RPA');
+  });
+
+  function abrirFormsPreenchido(formId, resId, formsUrl, type) {
+    const form = document.getElementById(formId);
+    const obj  = getFormData(formId);
+
+    // Mostra resumo na tela
+    const rows = document.getElementById(resId + '-rows');
+    const res  = document.getElementById(resId);
+    rows.innerHTML = Object.entries(obj).map(([k,v]) =>
+      `<div class="result-row">
+        <span class="result-key">${LABELS[k] || k}</span>
+        <span class="result-val">${v || '—'}</span>
+      </div>`
+    ).join('');
+    res.classList.add('show');
+
+    // Copia dados para área de transferência (tab-separado para colar no Excel)
+    const tsv = Object.values(obj).join('\t');
+    navigator.clipboard.writeText(tsv).catch(() => {});
+
+    // Abre o Forms numa nova aba para o usuário confirmar e enviar
+    window.open(formsUrl, '_blank');
+
+    showToast(`📋 Dados copiados + Forms aberto! Confirme o envio na nova aba.`);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 5000);
+  }
+</script>
+</body>
+</html>
